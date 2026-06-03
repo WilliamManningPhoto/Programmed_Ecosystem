@@ -14,11 +14,12 @@ class Animal:
 
 class Rabbit(Animal):
         prey = (Grass,)
+        reproduction_cooldown = 1
 
 
 class Fox(Animal):
         prey = (Rabbit,)
-
+        reproduction_cooldown = 3
 
 class World:
     def __init__(self, size):
@@ -34,10 +35,16 @@ class World:
         self.history_grass = []
 
     def print_counts(self):
-        print("Grass on grid:", self.count_grass_on_grid())
-        print("Rabbits on grid:", self.count_rabbits_on_grid())
-        print("Foxes on grid:", self.count_foxes_on_grid())
+        grass = self.count_grass_on_grid()
+        rabbits = self.count_rabbits_on_grid()
+        foxes = self.count_foxes_on_grid()
 
+        print("Grass on grid:", grass)
+        print("Rabbits on grid:", rabbits)
+        print("Foxes on grid:", foxes)
+
+        return grass, rabbits, foxes
+    
     def time_step(self):
         for rabbit in self.rabbits:
             self.move_animal(rabbit)
@@ -130,7 +137,7 @@ class World:
             # Fox hunting
             if isinstance(animal, Fox):
 
-                success = random.random() > 0.25 # Actual success rate
+                success = random.random() > 0.27 # Actual success rate
 
                 if success:
                     animal.energy += 10
@@ -198,6 +205,9 @@ class World:
 
     def move_animal(self,animal):
 
+        if animal.reproduction_cooldown > 0:
+            animal.reproduction_cooldown -= 1
+
         if isinstance(animal, Rabbit):
             animal.energy -= 1
         elif isinstance(animal,Fox):
@@ -214,12 +224,23 @@ class World:
         else:
             self.random_move(animal)
         
-        if isinstance(animal, Rabbit) and animal.energy >= 20: # Reproduction count for rabbits
+        if (
+            isinstance(animal, Rabbit)
+            and animal.energy >= 20
+            and animal.reproduction_cooldown == 0
+        ):
             self.reproduce(animal)
             animal.energy -= 10
-        elif isinstance(animal, Fox) and animal.energy >= 50: # Reproduction count for foxes
+            animal.reproduction_cooldown = type(animal).reproduction_cooldown
+
+        elif (
+            isinstance(animal, Fox)
+            and animal.energy >= 50
+            and animal.reproduction_cooldown == 0
+        ):
             self.reproduce(animal)
             animal.energy -= 30
+            animal.reproduction_cooldown = type(animal).reproduction_cooldown
 
     def kill(self, animal):
 
@@ -320,26 +341,36 @@ world.print_grid()
 world.print_counts()
 input("Press Enter for next step...")
 
-steps = 1000
+steps = 5000
+
+# Manual
 '''
 for i in range(steps):
     world.time_step()
     world.print_grid()
-    world.print_counts()
-    input("Press Enter for next step...)"
-'''
-
-for i in range(steps):
     print("step:", i)
 
+    grass, rabbits, foxes = world.print_counts()
+
+    world.history_grass.append(grass)
+    world.history_rabbits.append(rabbits)
+    world.history_foxes.append(foxes)
+
+    input("Press Enter for next step...")
+
+'''
+# Automatic
+for i in range(steps):
     world.time_step()
+    print("step:", i)
 
-    world.history_rabbits.append(len(world.rabbits))
-    world.history_foxes.append(len(world.foxes))
-    world.history_grass.append(len(world.grass))
+    grass, rabbits, foxes = world.print_counts()
 
-import matplotlib.pyplot as plt
+    world.history_grass.append(grass)
+    world.history_rabbits.append(rabbits)
+    world.history_foxes.append(foxes)
 
+# Plotting of all classes
 plt.plot(world.history_rabbits, label="Rabbits")
 plt.plot(world.history_foxes, label="Foxes")
 plt.plot(world.history_grass, label="Grass")
