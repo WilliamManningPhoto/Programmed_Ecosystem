@@ -81,7 +81,76 @@ class World:
         if isinstance(cell, Fox):
             return "F"
         return "."
+    
+    def time_step(self):
+        self.move_rabbits()
+        self.move_foxes()
+        self.grow_grass()
 
+    def move_rabbits(self):
+        for rabbit in self.rabbits:
+            self.grid[rabbit.y][rabbit.x] = None # Get rid of current position
+
+            dx, dy = random.choice([
+                (0,1),(0,-1),(1,0),(-1,0) # Choose next square randomly (update for ovement to grass)
+            ])
+
+            new_x = max(0, min(self.size-1, rabbit.x + dx)) # Modify old position with new one
+            new_y = max(0, min(self.size-1, rabbit.y + dy))
+
+            rabbit.x = new_x # Attatch new position to rabbit
+            rabbit.y = new_y
+
+            self.grid[new_y][new_x] = rabbit # Put on grid in new position
+            
+    def move_foxes(self):
+        for fox in self.foxes:
+            self.grid[fox.y][fox.x] = None # Get rid of current position
+
+            dx, dy = random.choice([
+                (0,1),(0,-1),(1,0),(-1,0) # Choose next square randomly (update for movement to rabbit)
+            ])
+
+            new_x = max(0, min(self.size-1, fox.x + dx)) # Modify old position with new one
+            new_y = max(0, min(self.size-1, fox.y + dy))
+
+            fox.x = new_x # Attatch new position to Fox
+            fox.y = new_y
+
+            self.grid[new_y][new_x] = fox # Put on grid in new position
+    
+    def print_counts(self):
+        print(f"Grass: {len(self.grass)}")
+        print(f"Rabbits: {len(self.rabbits)}")
+        print(f"Foxes: {len(self.foxes)}")
+
+    def grow_grass(self):
+        new_grass = []
+
+        for grass in self.grass:
+            if random.random() < 0.25:  # 25% chance to try spreading
+
+                directions = [
+                    (0, 1), (0, -1), (1, 0), (-1, 0)
+                ]
+
+                dx, dy = random.choice(directions)
+
+                new_x = grass.x + dx
+                new_y = grass.y + dy
+
+                # check bounds
+                if 0 <= new_x < self.size and 0 <= new_y < self.size:
+
+                    # only grow if empty
+                    if self.grid[new_y][new_x] is None:
+
+                        g = Grass(new_x, new_y)
+                        new_grass.append(g)
+                        self.grid[new_y][new_x] = g
+
+        self.grass.extend(new_grass)
+    
 
 size = int(input("Enter the size of the world: "))
 
@@ -90,3 +159,9 @@ world.spawn_grass()
 world.spawn_rabbits()
 world.spawn_foxes()
 world.print_grid()
+
+while True:
+    world.time_step()
+    world.print_grid()
+    world.print_counts()
+    input("Press Enter for next step...")
