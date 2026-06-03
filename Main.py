@@ -1,4 +1,5 @@
 import random
+import matplotlib.pyplot as plt
 
 class Grass:
     def __init__(self, x, y):
@@ -27,6 +28,10 @@ class World:
         self.grass = []
         self.rabbits = []
         self.foxes = []
+
+        self.history_rabbits = []
+        self.history_foxes = []
+        self.history_grass = []
 
     def print_counts(self):
         print("Grass on grid:", self.count_grass_on_grid())
@@ -193,7 +198,10 @@ class World:
 
     def move_animal(self,animal):
 
-        animal.energy -= 1
+        if isinstance(animal, Rabbit):
+            animal.energy -= 1
+        elif isinstance(animal,Fox):
+            animal.energy -= 3
 
         if animal.energy <= 0:
             self.kill(animal)
@@ -206,10 +214,10 @@ class World:
         else:
             self.random_move(animal)
         
-        if isinstance(animal, Rabbit) >= 20: # Reproduction count for rabbits
+        if isinstance(animal, Rabbit) and animal.energy >= 20: # Reproduction count for rabbits
             self.reproduce(animal)
             animal.energy -= 10
-        elif isinstance(animal, Fox) >= 50: # Reproduction count for foxes
+        elif isinstance(animal, Fox) and animal.energy >= 50: # Reproduction count for foxes
             self.reproduce(animal)
             animal.energy -= 30
 
@@ -312,8 +320,27 @@ world.print_grid()
 world.print_counts()
 input("Press Enter for next step...")
 
-while True:
+steps = 100
+'''
+for i in range(steps):
     world.time_step()
     world.print_grid()
     world.print_counts()
-    input("Press Enter for next step...")
+    input("Press Enter for next step...)"
+'''
+
+for _ in range(steps):
+    world.time_step()
+
+    world.history_rabbits.append(len(world.rabbits))
+    world.history_foxes.append(len(world.foxes))
+    world.history_grass.append(len(world.grass))
+
+import matplotlib.pyplot as plt
+
+plt.plot(world.history_rabbits, label="Rabbits")
+plt.plot(world.history_foxes, label="Foxes")
+plt.plot(world.history_grass, label="Grass")
+
+plt.legend()
+plt.show()
