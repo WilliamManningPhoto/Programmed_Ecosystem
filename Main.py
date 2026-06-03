@@ -122,20 +122,29 @@ class World:
 
         if isinstance(cell, animal.prey):
 
-            # energy gain rules
+            # Fox hunting
             if isinstance(animal, Fox):
-                animal.energy += 5
+
+                success = random.random() > 0.25 # Actual success rate
+
+                if success:
+                    animal.energy += 10
+
+                    self.rabbits.remove(cell)
+                    self.grid[y][x] = None
+
+                else:
+                    # Rabbit escape chance
+                    if random.random() < 0.5:
+                        self.random_move(cell)  # Rabbit escapes
+                    return
+
+            # Rabbit eating grass
             elif isinstance(animal, Rabbit):
                 animal.energy += 5
 
-            # remove eaten object from lists
-            if isinstance(cell, Grass):
                 self.grass.remove(cell)
-            elif isinstance(cell, Rabbit):
-                self.rabbits.remove(cell)
-
-            # remove from grid
-            self.grid[y][x] = None
+                self.grid[y][x] = None
 
     def move_towards(self,animal,target):
         tx, ty = target
@@ -196,8 +205,14 @@ class World:
             self.move_towards(animal, target)
         else:
             self.random_move(animal)
+        
+        if isinstance(animal, Rabbit) >= 20: # Reproduction count for rabbits
+            self.reproduce(animal)
+            animal.energy -= 10
+        elif isinstance(animal, Fox) >= 50: # Reproduction count for foxes
+            self.reproduce(animal)
+            animal.energy -= 30
 
-    
     def kill(self, animal):
 
         self.grid[animal.y][animal.x] = None
@@ -208,7 +223,26 @@ class World:
         elif isinstance(animal, Fox):
             self.foxes.remove(animal)
     
+    def reproduce(self, animal):
 
+        dx, dy = random.choice([
+            (0,1), (0,-1), (1,0), (-1,0)
+        ])
+
+        new_x = max(0, min(self.size - 1, animal.x + dx))
+        new_y = max(0, min(self.size - 1, animal.y + dy))
+
+        if self.grid[new_y][new_x] is None:
+
+            if isinstance(animal, Rabbit):
+                baby = Rabbit(new_x, new_y)
+                self.rabbits.append(baby)
+
+            elif isinstance(animal, Fox):
+                baby = Fox(new_x, new_y)
+                self.foxes.append(baby)
+
+            self.grid[new_y][new_x] = baby
 
     def grow_grass(self):
         new_grass = []
@@ -268,7 +302,7 @@ class World:
         return count
     
 
-size = int(input("Enter the size of the world: "))
+size = int(input("Enter the size of the world: (35 is for the best!) "))
 
 world = World(size)
 world.spawn_grass()
