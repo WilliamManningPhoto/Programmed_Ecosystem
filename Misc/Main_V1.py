@@ -1,6 +1,11 @@
 import random
 import matplotlib.pyplot as plt
 
+GREEN = "\033[32m"
+RED = "\033[31m"
+GREY = "\033[90m"
+RESET = "\033[0m"
+
 class Grass:
     def __init__(self, x, y):
         self.x = x
@@ -99,11 +104,14 @@ class World:
 
     def symbol(self, cell):
         if isinstance(cell, Grass):
-            return "G"
+            return f"{GREEN}G{RESET}"
+
         if isinstance(cell, Rabbit):
-            return "R"
+            return f"{GREY}R{RESET}"
+
         if isinstance(cell, Fox):
-            return "F"
+            return f"{RED}F{RESET}"
+
         return "."
     
     def find_nearest_prey(self, animal):
@@ -344,7 +352,7 @@ input("Press Enter for next step...")
 steps = 5000
 
 # Manual
-'''
+
 for i in range(steps):
     world.time_step()
     world.print_grid()
@@ -369,7 +377,7 @@ for i in range(steps):
     world.history_grass.append(grass)
     world.history_rabbits.append(rabbits)
     world.history_foxes.append(foxes)
-
+'''
 # Plotting of all classes
 plt.plot(world.history_rabbits, label="Rabbits")
 plt.plot(world.history_foxes, label="Foxes")
