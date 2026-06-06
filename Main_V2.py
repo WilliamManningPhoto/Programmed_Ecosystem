@@ -16,9 +16,15 @@ class Hare_behaviour:
         self.y = y
         self.energy = 25
         self.standing_on = None
+        self.eating_cooldown = 0
+        self.reproduction_cooldown = 0
         
     def Movement(self, env):
         self.energy -= 1
+        self.eating_cooldown = max(0, self.eating_cooldown - 1)
+        self.reproduction_cooldown = max(0, self.reproduction_cooldown - 1)
+
+
 
         directions = [(0,1), (0,-1), (1,0), (-1,0)]
         random.shuffle(directions)
@@ -44,23 +50,42 @@ class Hare_behaviour:
 
         self.Eating(env)
 
+        if self.energy >= 50 and self.reproduction_cooldown <= 0:
+            self.Reproduction(env)
+            self.energy -= 30
+            self.reproduction_cooldown = 2
+
     
     def Escape_attack(self):
         print("escape the foxes attack on a unsuccessful attack")
 
     def Eating(self, env): # Eating when animal is on prey
-        if isinstance(self.standing_on, Grass):
-            self.energy += 10
-            if self.standing_on in env.grass:
-                env.Remove_grass(self.standing_on)
-            self.standing_on = None
 
+        if isinstance(self.standing_on, Grass):
+            if self.eating_cooldown <= 0:
+                self.energy += 10
+                env.Remove_grass(self.standing_on)
+                self.standing_on = None
+                self.eating_cooldown = self.prey_cooldown
     
-    def Mate_finder(self):
-        print("find mate")
-    
-    def Reproduction(self): # Reproduce with nearest other
-        print("commit birth")
+    def Reproduction(self, env): # Reproduce asexually
+        directions = [(0,1), (0,-1), (1,0), (-1,0)]
+        random.shuffle(directions)
+
+        for dx, dy in directions:
+            new_x = self.x + dx
+            new_y = self.y + dy
+
+            if not (0 <= new_x < env.size_grid and 0 <= new_y < env.size_grid):
+                continue
+
+            if env.grid[new_y][new_x] is None or isinstance(env.grid[new_y][new_x], Grass):
+                baby = Hare(new_x, new_y)
+                baby.energy = 20
+                baby.standing_on = env.grid[new_y][new_x]
+                env.hares.append(baby)
+                env.grid[new_y][new_x] = baby
+                return  # Only spawn one baby
 
     def Age_animal(self):
         print("age dat boi")
@@ -71,6 +96,8 @@ class Fox_behaviour:
         self.y = y
         self.energy = 50
         self.standing_on = None
+        self.eating_cooldown = 0
+        self.reproduction_cooldown = 0
     
     def Prey_finder(self, env): # Location of nearest prey
         nearest = None
@@ -87,7 +114,8 @@ class Fox_behaviour:
         return nearest
             
     def Movement(self, env): # Movement of fox
-        self.energy -= 3
+        self.energy -= 2
+        self.eating_cooldown = max(0, self.eating_cooldown - 1)
 
         target = self.Prey_finder(env)
 
@@ -118,6 +146,11 @@ class Fox_behaviour:
 
             self.Eating(env)
 
+        if self.energy >= 150 and self.reproduction_cooldown <= 0:
+            self.Reproduction(env)
+            self.energy -= 100
+            self.reproduction_cooldown = 5
+
         
     def Pounce(self):
         print("special ability to jump 2 squares?, extra energy?")
@@ -125,17 +158,31 @@ class Fox_behaviour:
     def Eating(self, env): # Eating when item next to animal
 
         if isinstance(self.standing_on, Hare):
-            self.energy += 35
-            env.Remove_hare(self.standing_on)
-            self.standing_on = None
+            if self.eating_cooldown <= 0:
+                self.energy += 40
+                eaten = self.standing_on
+                self.standing_on = None
+                env.Remove_hare(eaten)
+                self.eating_cooldown = self.prey_cooldown
+                
+    def Reproduction(self, env): # Reproduce asexually
+        directions = [(0,1), (0,-1), (1,0), (-1,0)]
+        random.shuffle(directions)
 
-    
-    def Mate_finder(self):
-        print("find mate")
-    
-    def Reproduction(self): # Reproduce with nearest other
-        print("commit birth")
+        for dx, dy in directions:
+            new_x = self.x + dx
+            new_y = self.y + dy
 
+            if not (0 <= new_x < env.size_grid and 0 <= new_y < env.size_grid):
+                continue
+
+            if env.grid[new_y][new_x] is None or isinstance(env.grid[new_y][new_x], Grass):
+                baby = Fox(new_x, new_y)
+                baby.standing_on = None
+                env.foxes.append(baby)
+                env.grid[new_y][new_x] = baby
+                return  # Only spawn one baby
+            
     def Age_animal(self):
         print("age dat boi")
 
@@ -150,19 +197,18 @@ class Grass:
         self.x = x
         self.y = y
 
-
 class Hare(Hare_behaviour):
     prey = (Grass,)
-    reproduction_cooldown = 1
+    prey_cooldown = 2
 
 class Fox(Fox_behaviour):
     prey = (Hare,)
-    reproduction_cooldown = 3
     vision_range = 5
+    prey_cooldown = 8
 
 class Simulation:
     def __init__(self, env, data): # Working year cycle (dt)
-        self.days = 365 # Modify for length of simulation
+        self.days = 100 # Modify for length of simulation
         self.env = env
         self.data = data
         self.year = self.days * 24 
@@ -202,7 +248,7 @@ class Simulation:
 
 class Environment:
     def __init__(self):
-        self.size_grid = 30
+        self.size_grid = 50
         self.rocks = []
         self.hares = []
         self.foxes = []
@@ -313,8 +359,8 @@ class Environment:
                     self.grid[y][x] = Grass(x, y)
 
     def Spawn_animals(self):
-        hare_amount = int((self.size_grid * self.size_grid) * 0.05) # 45 initial hares
-        fox_amount = int((self.size_grid * self.size_grid) * 0.01) # 9 initial foxes
+        hare_amount = int((self.size_grid * self.size_grid) * 0.02) # initial hares
+        fox_amount = int((self.size_grid * self.size_grid) * 0.005) # initial foxes
 
         grass_tiles = [(g.x, g.y) for g in self.grass]
         spawn_tiles = random.sample(grass_tiles, hare_amount)
@@ -338,8 +384,8 @@ class Environment:
         claimed = set()
         current_grass = self.grass
         for grass in current_grass:
-            if random.random() < 0.10:
-                dx, dy = random.choice([(0,1),(0,-1),(1,0),(-1,0)])
+            if random.random() < 0.75: # Grass spawn rate adjust for more/less
+                dx, dy = random.choice([(0,1),(0,-1),(1,0),(-1,0),(0,2),(0,-2),(2,0),(-2,0),(1,1),(1,-1),(1,-1),(-1,-1)])
                 new_x, new_y = grass.x + dx, grass.y + dy
                 if 0 <= new_x < self.size_grid and 0 <= new_y < self.size_grid:
                     if self.grid[new_y][new_x] is None and (new_x, new_y) not in claimed:
@@ -350,12 +396,17 @@ class Environment:
         self.grid[grass.y][grass.x] = None
 
     def Remove_hare(self, hare):
-        self.grid[hare.y][hare.x] = hare.standing_on
-        self.hares.remove(hare)
+        if hare in self.hares:
+            if self.grid[hare.y][hare.x] is hare:
+                self.grid[hare.y][hare.x] = hare.standing_on
+            self.hares.remove(hare)
+            hare.standing_on = None
 
     def Remove_fox(self, fox):
-        self.grid[fox.y][fox.x] = fox.standing_on
-        self.foxes.remove(fox)
+        if fox in self.foxes:
+            if self.grid[fox.y][fox.x] is fox:
+                self.grid[fox.y][fox.x] = fox.standing_on
+            self.foxes.remove(fox)
 
     def symbol(self, cell):
         if isinstance(cell, Rocks):
@@ -383,10 +434,9 @@ class Data_Collection:
         self.env.history_foxes.append(len(self.env.foxes))
     
     def Graphs(self, env):
-        skip = 24 # skip first day for stablising
-        plt.plot(env.history_rabbits[skip:], label="Rabbits")
-        plt.plot(env.history_foxes[skip:], label="Foxes")
-        #plt.plot(env.history_grass[skip:], label="Grass")
+        plt.plot(env.history_rabbits, label="Rabbits")
+        plt.plot(env.history_foxes, label="Foxes")
+        #plt.plot(env.history_grass, label="Grass")
 
         plt.legend()
         plt.show()
