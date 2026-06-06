@@ -108,19 +108,27 @@ class Fox_behaviour:
 
         target_tile = env.grid[new_y][new_x]
 
-        # Only move to grass or empty tile
-        if isinstance(target_tile, Grass) or target_tile is None:
+        # Only move to grass, empty tile or hare
+        if isinstance(target_tile, Grass) or target_tile is None or isinstance(target_tile, Hare):
             env.grid[self.y][self.x] = self.standing_on
             self.standing_on = target_tile
             self.x = new_x
             self.y = new_y
             env.grid[new_y][new_x] = self
+
+            self.Eating(env)
+
         
     def Pounce(self):
         print("special ability to jump 2 squares?, extra energy?")
 
-    def Eating(self): # Eating when item next to animal
-        print("get eating working")
+    def Eating(self, env): # Eating when item next to animal
+
+        if isinstance(self.standing_on, Hare):
+            self.energy += 35
+            env.Remove_hare(self.standing_on)
+            self.standing_on = None
+
     
     def Mate_finder(self):
         print("find mate")
@@ -154,7 +162,7 @@ class Fox(Fox_behaviour):
 
 class Simulation:
     def __init__(self, env, data): # Working year cycle (dt)
-        self.days = 20 # Modify for length of simulation
+        self.days = 365 # Modify for length of simulation
         self.env = env
         self.data = data
         self.year = self.days * 24 
@@ -173,10 +181,6 @@ class Simulation:
     def Update_loop(self): # Update eat timestep (dt)
 
         self.data.Statistics()
-
-        print(f"Grass tiles on grid: {sum(1 for row in self.env.grid for cell in row if isinstance(cell, Grass))}")
-        print(f"Grass in list: {len(self.env.grass)}")
-
         self.env.Grow_grass()
             
         for hare in list(self.env.hares):  # list() so we can remove during iteration
@@ -190,6 +194,9 @@ class Simulation:
                 self.env.Remove_fox(fox)
 
         self.Print_map()
+        print(f"Grass: {len(self.env.grass)}")
+        print(f"Hares: {len(self.env.hares)}")
+        print(f"Foxes: {len(self.env.foxes)}")
         print("Step", self.step)
         self.step += 1
 
@@ -375,10 +382,11 @@ class Data_Collection:
         self.env.history_rabbits.append(len(self.env.hares))
         self.env.history_foxes.append(len(self.env.foxes))
     
-    def Graphs(self, env): # Graphing said stats
-        plt.plot(env.history_rabbits, label="Rabbits")
-        plt.plot(env.history_foxes, label="Foxes")
-        plt.plot(env.history_grass, label="Grass")
+    def Graphs(self, env):
+        skip = 24 # skip first day for stablising
+        plt.plot(env.history_rabbits[skip:], label="Rabbits")
+        plt.plot(env.history_foxes[skip:], label="Foxes")
+        #plt.plot(env.history_grass[skip:], label="Grass")
 
         plt.legend()
         plt.show()
@@ -392,6 +400,6 @@ E.Terrain_generation()
 
 for steps in range(S.year):
     S.Update_loop()
-    input("Press Enter for next step...")
+    #input("Press Enter for next step...")
 
 D.Graphs(E)
