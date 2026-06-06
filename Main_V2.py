@@ -136,8 +136,11 @@ class Fox_behaviour:
 
         target_tile = env.grid[new_y][new_x]
 
+        can_eat = self.eating_cooldown <= 0
+        hare_tile_ok = isinstance(target_tile, Hare) and can_eat
+
         # Only move to grass, empty tile or hare
-        if isinstance(target_tile, Grass) or target_tile is None or isinstance(target_tile, Hare):
+        if isinstance(target_tile, Grass) or target_tile is None or hare_tile_ok:
             env.grid[self.y][self.x] = self.standing_on
             self.standing_on = target_tile
             self.x = new_x
@@ -208,7 +211,7 @@ class Fox(Fox_behaviour):
 
 class Simulation:
     def __init__(self, env, data): # Working year cycle (dt)
-        self.days = 100 # Modify for length of simulation
+        self.days = 365 # Modify for length of simulation
         self.env = env
         self.data = data
         self.year = self.days * 24 
@@ -384,7 +387,7 @@ class Environment:
         claimed = set()
         current_grass = self.grass
         for grass in current_grass:
-            if random.random() < 0.75: # Grass spawn rate adjust for more/less
+            if random.random() < 0.5: # Grass spawn rate adjust for more/less
                 dx, dy = random.choice([(0,1),(0,-1),(1,0),(-1,0),(0,2),(0,-2),(2,0),(-2,0),(1,1),(1,-1),(1,-1),(-1,-1)])
                 new_x, new_y = grass.x + dx, grass.y + dy
                 if 0 <= new_x < self.size_grid and 0 <= new_y < self.size_grid:
