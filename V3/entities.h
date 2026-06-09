@@ -1,3 +1,7 @@
+// Declarations for all entities that exist on the grid
+// Entity -> Animal -> Hare/Fox
+// Entity -> Plant -> Grass/Tree
+
 #pragma once
 
 // Base class for everything that exists on the grid, holds position data
@@ -6,6 +10,12 @@ class Entity {
         int x, y;  // Position on the grid
         Entity(int x, int y);
         virtual ~Entity() {} // Cleanup for pointer based grid
+};
+
+// Base class for rocks
+class Rock : public Entity{
+    public:
+        Rock(int x, int y);
 };
 
 // Base class for all animals, holds shared biological data
@@ -29,28 +39,28 @@ class Plant : public Entity{
 
 // Hare, hunted by foxes, eats grass
 class Hare : public Animal {
-public:
-    Hare(int x, int y); // Constructor declariations
-    void move() override;
+    public:
+        Hare(int x, int y); // Constructor declariations
+        void move() override;
 };
 
 // Fox, hunts hares
 class Fox : public Animal {
-public:
-    Fox(int x, int y);
-    void move() override;
+    public:
+        Fox(int x, int y);
+        void move() override;
 };
 
 // Grass, eaten by hares, spreads to empty tiles
 class Grass : public Plant{
-public:
-    Grass(int x, int y);
-    void plant_reproduction();
+    public:
+        Grass(int x, int y);
+        void plant_reproduction();
 };
 
 // Tree, acts as a moving obstacle, dies of old age
 class Tree : public Plant{
-public:
-    Tree(int x, int y);
-    void plant_reproduction();
+    public:
+        Tree(int x, int y);
+        void plant_reproduction();
 };

@@ -1,10 +1,17 @@
-#include "entities.h"
+// Definitions for all entity constructors
+// Each class passes shared data up the inheritance chain
 
+#include "entities.h"
 
 // Base entity constructor, sets position for all entities on the grid
 Entity::Entity(int x, int y){
     this->x = x;
     this->y = y;
+}
+
+// Rock constructor setup to pass to Entity
+Rock::Rock(int x, int y) : Entity(x, y){
+
 }
 
 // Animal constructor, passes position up to Entity then sets animal specific values
@@ -22,6 +29,7 @@ Hare::Hare(int x, int y) : Animal(x, y, 25, 2, 2) {
 Fox::Fox(int x, int y) : Animal(x, y, 50, 6, 36) {
 
 }
+
 // Plant constructor, passes position up to Entity then sets plant specific values
 Plant::Plant(int x, int y, int reproduction_cooldown) : Entity(x, y){
     this->reproduction_cooldown = reproduction_cooldown;
