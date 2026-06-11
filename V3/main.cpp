@@ -6,11 +6,15 @@
 
 #include "environment.h"
 #include "renderer.h"
+#include "simulation.h"
 
 int main() {
     srand(time(0));
     Environment env;
+    Simulation sim(env);
     sf::RenderWindow window(sf::VideoMode(1500, 800), "Ecosystem_Simulator"); // Render the window with a 800 by 1500 pixel space
+
+    sf::Clock clock;
 
     while (window.isOpen()) {
         sf::Event event;
@@ -19,8 +23,14 @@ int main() {
                 window.close(); // X to close
         }
         window.clear(sf::Color::Black);
+
         draw_grid(window);
         draw_entities(window, env);
+
+        if (clock.getElapsedTime().asSeconds() >= TIME_INTERVAL) {
+            clock.restart();
+            sim.update_loop();
+}
         window.display();
     }
 }

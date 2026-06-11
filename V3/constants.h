@@ -1,10 +1,11 @@
 #pragma once
 
-// Utilised to hold constants i want globally
+// Utilised to hold constants i want globally also easy to modify for fun
 const int CELL = 20;
 const int MAP_HEIGHT = 800;
 const int MAP_WIDTH = 1500;
 const int GRID_SIZE = 100;
+const float TIME_INTERVAL = 1; // 1 simulation tick per second
 
 // Spawn rates of entities
 const float ROCK_MIN = 0.001;

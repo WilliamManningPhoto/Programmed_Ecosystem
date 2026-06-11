@@ -1,6 +1,8 @@
 // Definitions for all entity constructors
 // Each class passes shared data up the inheritance chain
 
+#include <algorithm> // Utilising std::max
+
 #include "entities.h"
 
 // Base entity constructor, sets position for all entities on the grid
@@ -25,8 +27,20 @@ Animal::Animal(int x, int y, int energy, int eating_cooldown, int reproduction_c
 Hare::Hare(int x, int y) : Animal(x, y, 25, 2, 2) {
 
 }
+
+// Hare movement
+void Hare::move(){
+    energy -= 1;
+    eating_cooldown = std::max(0, eating_cooldown - 1);
+    reproduction_cooldown = std::max(0, reproduction_cooldown - 1);
+}
+
 // FOX passes position and its fixed stats up to Animal
 Fox::Fox(int x, int y) : Animal(x, y, 50, 6, 36) {
+
+}
+
+void Fox::move(){
 
 }
 
@@ -40,13 +54,15 @@ Grass::Grass(int x, int y) : Plant(x, y, 1){
 
 }
 
+void Grass::plant_reproduction(){
+
+}
+
 // Tree passes position and its reproduction rate up to Plant
 Tree::Tree(int x, int y) : Plant(x, y, 1){
 
 }
 
-//temps
-void Hare::move() {}
-void Fox::move() {}
-void Grass::plant_reproduction() {}
-void Tree::plant_reproduction() {}
+void Tree::plant_reproduction(){
+
+}

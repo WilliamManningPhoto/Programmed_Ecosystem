@@ -106,3 +106,8 @@ void Environment::animal_placement(){
 void Environment::entity_removal(){
 
 }
+
+// Growth of grass
+void Environment::grow_grass(){
+
+}
