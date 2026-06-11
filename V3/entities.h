@@ -4,6 +4,8 @@
 
 #pragma once
 
+class Environment;
+
 // Base class for everything that exists on the grid, holds position data
 class Entity {
     public:
@@ -26,7 +28,7 @@ class Animal : public Entity{
         int reproduction_cooldown; // Steps before animal can reproduce again
         
         Animal(int x, int y, int energy, int eating_cooldown, int reproduction_cooldown);
-        virtual void move() = 0; // Each animal defines its own movement
+        virtual void move(Environment& env) = 0; // Each animal defines its own movement
 };
 
 // Base class for all plants, holds shared plant data
@@ -41,14 +43,14 @@ class Plant : public Entity{
 class Hare : public Animal {
     public:
         Hare(int x, int y); // Constructor declariations
-        void move() override;
+        void move(Environment& env) override;
 };
 
 // Fox, hunts hares
 class Fox : public Animal {
     public:
         Fox(int x, int y);
-        void move() override;
+        void move(Environment& env) override;
 };
 
 // Grass, eaten by hares, spreads to empty tiles

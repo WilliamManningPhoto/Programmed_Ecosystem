@@ -4,6 +4,7 @@
 #include <algorithm> // Utilising std::max
 
 #include "entities.h"
+#include "environment.h"
 
 // Base entity constructor, sets position for all entities on the grid
 Entity::Entity(int x, int y){
@@ -29,10 +30,30 @@ Hare::Hare(int x, int y) : Animal(x, y, 25, 2, 2) {
 }
 
 // Hare movement
-void Hare::move(){
+void Hare::move(Environment& env){
     energy -= 1;
     eating_cooldown = std::max(0, eating_cooldown - 1);
     reproduction_cooldown = std::max(0, reproduction_cooldown - 1);
+
+    int directions[4][2] = {{0,1},{0,-1},{1,0},{-1,0}};
+    int dir = rand() % 4;
+    int dx = directions[dir][0];
+    int dy = directions[dir][1];
+
+    int new_x = x + dx;
+    int new_y = y + dy;
+
+    if (new_x >= 0 && new_x < GRID_SIZE && new_y >= 0 && new_y < GRID_SIZE){
+        if (env.grid[new_y][new_x] == nullptr || dynamic_cast<Grass*>(env.grid[new_y][new_x])){
+
+            env.grid[y][x] = nullptr;
+            x = new_x;
+            y = new_y;
+            env.grid[new_y][new_x] = this;
+
+        }
+    }
+
 }
 
 // FOX passes position and its fixed stats up to Animal
@@ -40,7 +61,7 @@ Fox::Fox(int x, int y) : Animal(x, y, 50, 6, 36) {
 
 }
 
-void Fox::move(){
+void Fox::move(Environment& env){
 
 }
 
