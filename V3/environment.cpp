@@ -9,36 +9,38 @@
 #include "environment.h"
 #include "constants.h"
 
-// Looping through the grid to make it empty at first
+// Initialise every grid cell to empty, then populate the world
 Environment::Environment(){
     for (int y = 0; y < GRID_SIZE; y++) {
         for (int x = 0; x < GRID_SIZE; x++) {
-            grid[y][x] = nullptr; // None in C++
+            grid[y][x] = nullptr; // Empty cell — no entity present
         }
     }
 
     terrain_generation();
 }
 
- // Calling all placement for initial setup
+ // Runs placement in order so each stage can rely on the previous one
 void Environment::terrain_generation(){
     obstacle_placement();
     plant_placement();
     animal_placement();
 }
 
- // Rock placement
+ // Scatter circular rock clusters across the grid
 void Environment::obstacle_placement(){
     int num_clusters = ROCK_MIN * GRID_SIZE * GRID_SIZE + rand() % (int)((ROCK_MAX - ROCK_MIN) * GRID_SIZE * GRID_SIZE);
     for (int i = 0; i < num_clusters; i++){
-        int cx = rand() % GRID_SIZE;
+        int cx = rand() % GRID_SIZE; // Random cluster centre
         int cy = rand() % GRID_SIZE;
-        int radius = 3 + rand() % 6;
+        int radius = 3 + rand() % 6; //Each cluster is 3–8 cells in radius
         
         for (int y = cy - radius; y < cy + radius; y++){
             for (int x = cx - radius; x < cx + radius; x++){
                 if (x >= 0 && x < GRID_SIZE && y >= 0 && y < GRID_SIZE){
                     float dist = sqrt((x-cx)*(x-cx) + (y-cy)*(y-cy));
+
+                    //Use distance check to make clusters circular rather than square
                     if (dist < radius && grid[y][x] == nullptr){
                         Rock* r = new Rock(x, y);
                         rocks.push_back(r);
@@ -50,10 +52,11 @@ void Environment::obstacle_placement(){
     }
 }
 
- // Grass, Trees
+ // Fill all empty tiles with grass, then replace a random subset with trees
 void Environment::plant_placement(){
     int tree_amount = TREE_MIN * GRID_SIZE * GRID_SIZE + rand() % (int)((TREE_MAX - TREE_MIN) * GRID_SIZE * GRID_SIZE);
 
+    //Grass fills every tile not already occupied by a rock
     for (int y = 0; y < GRID_SIZE; y++){
         for (int x = 0; x < GRID_SIZE; x++){
             if (grid[y][x] == nullptr){
@@ -64,6 +67,7 @@ void Environment::plant_placement(){
         }
     }
 
+    //Place trees on randomly chosen grass tiles, removing the grass underneath
     for (int i = 0; i < tree_amount; i++){
         Grass* g = grass[rand() % grass.size()];
         int x = g->x;
@@ -77,7 +81,8 @@ void Environment::plant_placement(){
     }
 }
 
-// Hares and foxes placed
+// Spawn hares and foxes on randomly chosen grass tile
+// Animals placed directly on grass
 void Environment::animal_placement(){
     int hare_amount = HARE_MIN * GRID_SIZE * GRID_SIZE + rand() % (int)((HARE_MAX - HARE_MIN) * GRID_SIZE * GRID_SIZE);
     int fox_amount = FOX_MIN * GRID_SIZE * GRID_SIZE + rand() % (int)((FOX_MAX - FOX_MIN) * GRID_SIZE * GRID_SIZE);
@@ -89,7 +94,8 @@ void Environment::animal_placement(){
 
         Hare* h = new Hare(x, y);
         hares.push_back(h);
-        grid[y][x] = h;
+        h->standing_on = g;
+        grid[y][x] = h; // Overwrites grass pointer on the grid
     }
     for (int i = 0; i < fox_amount; i++){
         Grass* g = grass[rand() % grass.size()];
@@ -98,6 +104,7 @@ void Environment::animal_placement(){
 
         Fox* f = new Fox(x, y);
         foxes.push_back(f);
+        f->standing_on = g;
         grid[y][x] = f;
     }
 }

@@ -22,6 +22,7 @@ Animal::Animal(int x, int y, int energy, int eating_cooldown, int reproduction_c
     this->energy = energy;
     this->eating_cooldown = eating_cooldown;
     this->reproduction_cooldown = reproduction_cooldown;
+    this->standing_on = nullptr;
 }
 
 // Hare passes position and its fixed stats up to Animal
@@ -31,10 +32,11 @@ Hare::Hare(int x, int y) : Animal(x, y, 25, 2, 2) {
 
 // Hare movement
 void Hare::move(Environment& env){
-    energy -= 1;
-    eating_cooldown = std::max(0, eating_cooldown - 1);
+    energy -= 1; // Burn energy each tick
+    eating_cooldown = std::max(0, eating_cooldown - 1); // Count down, floor at 0
     reproduction_cooldown = std::max(0, reproduction_cooldown - 1);
 
+    // Pick a random cardinal direction
     int directions[4][2] = {{0,1},{0,-1},{1,0},{-1,0}};
     int dir = rand() % 4;
     int dx = directions[dir][0];
@@ -43,12 +45,14 @@ void Hare::move(Environment& env){
     int new_x = x + dx;
     int new_y = y + dy;
 
+    // Only move if the target tile is in bounds and is empty or grass (hares don't displace other entities)
     if (new_x >= 0 && new_x < GRID_SIZE && new_y >= 0 && new_y < GRID_SIZE){
         if (env.grid[new_y][new_x] == nullptr || dynamic_cast<Grass*>(env.grid[new_y][new_x])){
 
-            env.grid[y][x] = nullptr;
+            env.grid[y][x] = standing_on;
             x = new_x;
             y = new_y;
+            standing_on = env.grid[new_y][new_x];
             env.grid[new_y][new_x] = this;
 
         }

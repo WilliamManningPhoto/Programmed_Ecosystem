@@ -26,7 +26,8 @@ class Animal : public Entity{
         int energy; // Energy level, reaches 0 animal dies
         int eating_cooldown; // Steps before animal can eat again
         int reproduction_cooldown; // Steps before animal can reproduce again
-        
+        Entity* standing_on;
+
         Animal(int x, int y, int energy, int eating_cooldown, int reproduction_cooldown);
         virtual void move(Environment& env) = 0; // Each animal defines its own movement
 };

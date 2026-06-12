@@ -5,18 +5,20 @@
 #include "entities.h"
 #include "constants.h"
 
+// Owns the world state: the grid, all entity lists, and the logic to populate and update them
 class Environment{
-    public: // Public so other functions can access
+    public:
+        // 2D grid of raw pointers, each cell holds one entity or nullptr if empty
         Entity* grid[GRID_SIZE][GRID_SIZE];
 
-        // Vectors (lists)
+        // Per-type lists for fast iteration (avoids scanning the whole grid each tick)
         std::vector<Hare*> hares;
         std::vector<Fox*> foxes;
         std::vector<Grass*> grass;
         std::vector<Tree*> trees;
         std::vector<Rock*> rocks;
 
-        Environment();
+        Environment(); // Initialises grid to nullptr and calls terrain_generation
 
     void terrain_generation();
 
