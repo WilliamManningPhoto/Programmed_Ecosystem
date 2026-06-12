@@ -28,7 +28,7 @@ class Environment{
 
     void animal_placement();
 
-    void entity_removal();
+    void entity_removal(Hare* hare);
 
     void grow_grass();
 };

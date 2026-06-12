@@ -13,8 +13,12 @@ void Simulation::update_loop(){
     env.grow_grass();
 
     // Advance every hare: move, eat, reproduce, age
+    std::vector<Hare*> hares_copy = env.hares;
     for (auto& hare : env.hares) {
         hare->move(env);
+        if (hare->energy <= 0) {
+            env.entity_removal(hare);
+    }
     }
 
     step++;

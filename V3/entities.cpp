@@ -58,6 +58,24 @@ void Hare::move(Environment& env){
         }
     }
 
+    if (dynamic_cast<Grass*>(standing_on) != nullptr){
+        if (eating_cooldown == 0){
+            
+            Grass* eaten = dynamic_cast<Grass*>(standing_on);
+            for (auto& h : env.hares) {
+                if (h->standing_on == eaten) {
+                    h->standing_on = nullptr;
+                }
+            }
+
+            energy += 15;
+            env.grass.erase(std::find(env.grass.begin(), env.grass.end(), dynamic_cast<Grass*>(standing_on)));
+            delete dynamic_cast<Grass*>(standing_on);
+            standing_on = nullptr;
+            eating_cooldown = 2;
+        }
+    }
+
 }
 
 // FOX passes position and its fixed stats up to Animal

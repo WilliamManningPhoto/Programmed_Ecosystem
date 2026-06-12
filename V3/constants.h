@@ -9,8 +9,8 @@ const int MAP_WIDTH = 1500; // Window width in pixels
 const int GRID_SIZE = 100; // Number of cells along each axis
 
 // Timing
-const float TIME_INTERVAL = 0.001; // 1000 simulation tick per second
-const int SIMULATION_DAYS = 50; // Total days per run; each day is 24 ticks
+const float TIME_INTERVAL = 0.01; // 100 simulation tick per second
+const int SIMULATION_DAYS = 100; // Total days per run; each day is 24 ticks
 
 // Spawn rates of entities ( as fraction of grid)
 const float ROCK_MIN = 0.001;

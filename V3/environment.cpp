@@ -110,8 +110,12 @@ void Environment::animal_placement(){
 }
 
 // If entity dies remove from game
-void Environment::entity_removal(){
-
+void Environment::entity_removal(Hare* hare){
+    if (grid[hare->y][hare->x] == hare) {
+        grid[hare->y][hare->x] = hare->standing_on;
+    }
+    hares.erase(std::find(hares.begin(), hares.end(), hare));
+    delete hare;
 }
 
 // Growth of grass
